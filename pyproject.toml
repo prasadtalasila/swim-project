@@ -1,0 +1,42 @@
+[project]
+name = "swim_project"
+version = "0.1.0"
+description = "Record sensor readings from an MQTT broker into a PostgreSQL database."
+readme = "README.md"
+license = "LicenseRef-ICAPL-1.0"
+license-files = ["LICENSE.md"]
+authors = [{ name = "Prasad Talasila" }]
+requires-python = ">=3.12"
+dependencies = [
+    "click>=8.2",
+    "paho-mqtt>=2.1",
+    "psycopg[binary]>=3.2",
+    "rich>=15.0.0",
+    "rich-click>=1.9.9",
+]
+
+[project.scripts]
+swim-project = "swim_project.__main__:main"
+
+[dependency-groups]
+dev = ["pytest", "pytest-cov", "ruff", "pylint"]
+
+[build-system]
+requires = ["uv_build>=0.9,<0.14"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "BLE", "RUF100"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["swim_project"]
+
+[tool.coverage.report]
+fail_under = 98
