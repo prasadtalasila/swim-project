@@ -181,3 +181,16 @@ def test_export_writes_into_the_current_directory(config, conn, tmp_path, monkey
     assert result.exit_code == 0, result.output
     assert result.output == "device.csv: 1 rows\nreading.csv: 0 rows\n"
     assert (tmp_path / "device.csv").is_file() and conn.closed
+
+
+def test_export_entries(config, conn, tmp_path, monkeypatch):
+    conn.rows = {"device": [], "reading": []}
+    monkeypatch.chdir(tmp_path)
+    result = invoke("export", "--config", config, "--jsonl", "--entries", "5")
+    assert result.exit_code == 0, result.output
+    assert all("LIMIT 5) AS t" in sql for sql, _ in conn.executed if "row_to_json" in sql)
+
+
+def test_export_entries_must_be_positive(config):
+    result = invoke("export", "--config", config, "--csv", "--entries", "0")
+    assert result.exit_code == 2 and "--entries" in result.output

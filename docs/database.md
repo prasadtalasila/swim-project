@@ -158,6 +158,7 @@ are replaced.
 swim-project export --csv           # device.csv, reading.csv
 swim-project export --jsonl         # device.jsonl, reading.jsonl
 swim-project export --csv --jsonl   # all four
+swim-project export --csv --entries 1000   # at most 1000 rows per table
 ```
 
 ```text
@@ -167,7 +168,12 @@ reading.csv: 6307 rows
 
 Both tables are read in one read-only, repeatable-read transaction, so
 the files are one consistent snapshot even while a recorder is writing.
-Rows are in primary-key order and every timestamp is in UTC. A file is
+Rows are in primary-key order and every timestamp is in UTC.
+`--entries N` writes at most N rows per table: the N readings with the
+latest `measured_at` and the N devices with the latest `first_seen`,
+still in primary-key order. The two cuts are independent, so with fewer
+devices exported than exist, some readings may name a device missing
+from `device.csv`. A file is
 written under a `.part` name and renamed when complete, so a failed
 export leaves no truncated file behind. Every column is exported, in the
 table's own column order, so a database that still awaits `init-db

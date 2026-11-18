@@ -1,6 +1,6 @@
 [project]
 name = "swim_project"
-version = "0.1.0"
+version = "0.2.0"
 description = "Record sensor readings from an MQTT broker into a PostgreSQL database."
 readme = "README.md"
 license = "LicenseRef-ICAPL-1.0"

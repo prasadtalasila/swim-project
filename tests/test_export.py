@@ -38,11 +38,27 @@ def test_reads_one_utc_snapshot_in_key_order(tmp_path):
     missing, snapshot, utc, device_csv, device_jsonl, reading_csv, reading_jsonl = statements(conn)
     assert missing == db.MISSING_TABLES
     assert (snapshot, utc) == (export.SNAPSHOT, export.UTC)
-    assert "COPY (SELECT * FROM device ORDER BY device_id) TO STDOUT" in device_csv
+    assert "COPY (SELECT * FROM device AS t ORDER BY t.device_id) TO STDOUT" in device_csv
     assert device_jsonl.endswith("FROM device AS t ORDER BY t.device_id")
-    assert "ORDER BY device_id, parameter, measured_at) TO STDOUT" in reading_csv
+    assert "ORDER BY t.device_id, t.parameter, t.measured_at) TO STDOUT" in reading_csv
     assert reading_jsonl.endswith(
         "FROM reading AS t ORDER BY t.device_id, t.parameter, t.measured_at"
+    )
+
+
+def test_entries_keeps_the_newest_rows_in_key_order(tmp_path):
+    conn = FakeConnection(rows=ROWS)
+    export.export_tables(conn, tmp_path, ("csv", "jsonl"), entries=100)
+    _, _, _, device_csv, device_jsonl, reading_csv, reading_jsonl = statements(conn)
+    device = "(SELECT * FROM device ORDER BY first_seen DESC, device_id LIMIT 100) AS t"
+    reading = (
+        "(SELECT * FROM reading ORDER BY measured_at DESC, device_id, parameter LIMIT 100) AS t"
+    )
+    assert f"COPY (SELECT * FROM {device} ORDER BY t.device_id) TO STDOUT" in device_csv
+    assert device_jsonl.endswith(f"FROM {device} ORDER BY t.device_id")
+    assert f"FROM {reading} ORDER BY t.device_id, t.parameter, t.measured_at)" in reading_csv
+    assert reading_jsonl.endswith(
+        f"FROM {reading} ORDER BY t.device_id, t.parameter, t.measured_at"
     )
 
 

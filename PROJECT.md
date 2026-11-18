@@ -77,7 +77,7 @@ the repository root here.
 
 ```bash
 uv run python scripts/build_templates.py && uv build
-uv tool install --force dist/swim_project-0.1.0-py3-none-any.whl
+uv tool install --force dist/swim_project-0.2.0-py3-none-any.whl
 ```
 
 The wheel holds only the `swim_project` package, its templates and the

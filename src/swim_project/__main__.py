@@ -41,7 +41,10 @@ Record one room instead of the configured topics, showing the readings:
   swim-project record --display --topic 'site-a/building-1/room/101/+/S/+/+'
 
 Export both tables as device.csv and reading.csv, and as JSON Lines:
-  swim-project export --csv --jsonl"""
+  swim-project export --csv --jsonl
+
+Export only the 1000 newest readings (and at most 1000 devices):
+  swim-project export --csv --entries 1000"""
 )
 
 CONFIG_HELP = (
@@ -191,11 +194,18 @@ def record_command(**options) -> None:
 @config_option
 @click.option("--csv", "csv_", is_flag=True, help="Write device.csv and reading.csv, with headers.")
 @click.option("--jsonl", is_flag=True, help="Write device.jsonl and reading.jsonl.")
-def export_command(config_path: Path, csv_: bool, jsonl: bool) -> None:
+@click.option(
+    "--entries",
+    type=click.IntRange(min=1),
+    metavar="N",
+    help="Write at most N rows per table: the newest readings and most recently seen devices.",
+)
+def export_command(config_path: Path, csv_: bool, jsonl: bool, entries: int | None) -> None:
     """Export every table into the current directory, one file per table and format.
 
     Files are named after their table and replace any of the same name. Both
-    tables come from one consistent snapshot; timestamps are in UTC.
+    tables come from one consistent snapshot; timestamps are in UTC. Rows
+    are in key order, also with --entries.
     """
     formats = tuple(name for name, chosen in (("csv", csv_), ("jsonl", jsonl)) if chosen)
     if not formats:
@@ -204,7 +214,7 @@ def export_command(config_path: Path, csv_: bool, jsonl: bool) -> None:
     def export() -> list[tuple[Path, int]]:
         conn = connect(load_db(config_path))
         with conn:
-            return export_tables(conn, Path.cwd(), formats)
+            return export_tables(conn, Path.cwd(), formats, entries)
 
     console = Console()
     for path, rows in _refusing(export):

@@ -14,7 +14,7 @@ environment with [uv](https://docs.astral.sh/uv/), from a wheel file or
 from the repository:
 
 ```bash
-uv tool install ./swim_project-0.1.0-py3-none-any.whl
+uv tool install ./swim_project-0.2.0-py3-none-any.whl
 uv tool install git+<repository-url>
 swim-project --version
 ```
@@ -142,9 +142,11 @@ Export every table into the current directory, one file per table:
 swim-project export --csv            # device.csv, reading.csv
 swim-project export --jsonl          # device.jsonl, reading.jsonl
 swim-project export --csv --jsonl    # both
+swim-project export --csv --entries 1000   # at most 1000 rows per table
 ```
 
-The formats are described in
+`--entries N` keeps the N newest readings and the N most recently seen
+devices. The formats are described in
 [docs/database.md](docs/database.md#exporting).
 
 `swim-project --help` lists the commands, and `swim-project <command>
